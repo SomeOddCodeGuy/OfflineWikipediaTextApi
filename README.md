@@ -67,18 +67,18 @@ and where.
    1) Windows: `python -m pip install -r requirements.txt`
    2) Linux/MacOS: `python -m pip install -r requirements.txt`
 6) Pull down the two needed datasets into the following folders within the project folder:
-   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20240101
-       You would need git-lfs installed to clone it
-       Windows: https://git-lfs.com/
-       Mac: https://git-lfs.com/ or `brew install git-lfs`
-       Linux Ubuntu/Debian: `sudo apt install git-lfs`
-       Then run:
-         `git lfs install`
-         `git clone https://huggingface.co/datasets/NeuML/wikipedia-20240101`
-       The dataset requieres to be called `wiki-dataset` so rename it:
-         `mv wikipedia-20240101 wiki-dataset`      
+   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20240101 
+        You would need git-lfs installed to clone it
+        Windows: https://git-lfs.com/
+        Mac: https://git-lfs.com/ or `brew install git-lfs`
+        Linux Ubuntu/Debian: `sudo apt install git-lfs`
+        Then run:
+        `git lfs install`
+        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20240101`
+        The dataset requieres to be called `wiki-dataset` so rename it:
+        `mv wikipedia-20240101 wiki-dataset`      
    3) `txtai-wikipedia` folder: https://huggingface.co/NeuML/txtai-wikipedia
-       `git clone https://huggingface.co/NeuML/txtai-wikipedia`
+        `git clone https://huggingface.co/NeuML/txtai-wikipedia`
    5) See project structure below to make sure you did it right
 7) Run start_api.py
    1) Windows: python start_api.py
