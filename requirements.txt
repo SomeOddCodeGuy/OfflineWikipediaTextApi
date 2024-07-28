@@ -1,0 +1,7 @@
+uvicorn~=0.30.3
+fastapi~=0.111.1
+datasets~=2.20.0
+numpy<2
+txtai~=7.3.0
+faiss-cpu==1.8.0
+colorama~=0.4.6
