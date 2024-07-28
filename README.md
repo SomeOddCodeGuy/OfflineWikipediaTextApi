@@ -151,7 +151,7 @@ This project imports dependencies in the requirements.txt:
 - [Uvicorn](https://github.com/encode/uvicorn/)
 - [FastAPI](https://github.com/tiangolo/fastapi/)
 - [Datasets](https://github.com/huggingface/datasets/)
-- [Txtai](https://github.com/neuml/txtai/):
+- [Txtai](https://github.com/neuml/txtai/)
 - [Faiss-cpu](https://github.com/facebookresearch/faiss/)
 - [Colorama](https://github.com/tartley/colorama/)
 - [NumPy](https://github.com/numpy/numpy/)
