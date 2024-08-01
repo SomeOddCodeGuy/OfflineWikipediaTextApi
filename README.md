@@ -58,14 +58,16 @@ and where.
    `cd OfflineWikipediaTextApi`
 3) Optional: create a python virtual environment.
    1) Windows: `python -m venv venv`
-   2) MacOS/Linux: `python3 -m venv venv`
+   2) MacOS: `python3 -m venv venv`
+   3) Linux: `python -m venv venv`
 4) Optional: activate python virtual environment.
    1) Windows: `venv\Scripts\activate`
    2) MacOS/Linux: `venv/bin/activate`
    3) Fish shell: `venv/bin/activate.fish`
 5) Pip install the requirements from requirements.txt
    1) Windows: `python -m pip install -r requirements.txt`
-   2) Linux/MacOS: `python -m pip install -r requirements.txt`
+   2) MacOS: `python3 -m pip install -r requirements.txt`
+   3) Linux: `python -m pip install -r requirements.txt`
 6) Pull down the two needed datasets into the following folders within the project folder:
    1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20240101 
         You would need git-lfs installed to clone it
@@ -77,9 +79,9 @@ and where.
         `git clone https://huggingface.co/datasets/NeuML/wikipedia-20240101`
         The dataset requieres to be called `wiki-dataset` so rename it:
         `mv wikipedia-20240101 wiki-dataset`      
-   3) `txtai-wikipedia` folder: https://huggingface.co/NeuML/txtai-wikipedia
+   2) `txtai-wikipedia` folder: https://huggingface.co/NeuML/txtai-wikipedia
         `git clone https://huggingface.co/NeuML/txtai-wikipedia`
-   5) See project structure below to make sure you did it right
+   3) See project structure below to make sure you did it right
 7) Run start_api.py
    1) Windows: python start_api.py
    2) MacOS/Linux: python3 start_api.py
