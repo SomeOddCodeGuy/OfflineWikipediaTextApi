@@ -24,7 +24,7 @@ minutes to do some indexing. This will only occur on first run; just let it do i
 the process halfway through and need to redo it, you can simply delete the "title_to_index.json" file and it will be
 recreated. You can also delete the "wiki-dataset" and "txtai-wikipedia" folders to redownload.
 
-If you're dataset savvy and want to make new, more up to date, datasets to use with this- NeuML's huggingface repos give
+If you're dataset savvy and want to make new, more up to date, datasets to use with this- NeuML's Hugging Face repos give
 instructions on how.
 
 This project relies heavily on [txtai](https://github.com/neuml/txtai/), which uses various libraries to download
