@@ -1,5 +1,6 @@
 import os
 import json
+from typing import List, Dict
 
 import colorama
 from colorama import Fore, Style
@@ -7,6 +8,9 @@ from fastapi import FastAPI, HTTPException, Query
 from datasets import Dataset, concatenate_datasets
 import uvicorn
 from txtai.embeddings import Embeddings
+
+from collections import Counter
+import re
 
 # Correcting an issue in Windows
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -56,9 +60,16 @@ app = FastAPI()
 embeddings = Embeddings()
 embeddings.load(path=TXT_AI_DIR)
 
+def escape_sql_string(s) -> str:
+    s = s.replace("'", "")
+    s = s.replace("\"", "")
+    s = s.replace(";", "")
+    return s
+
 @app.get("/articles/{title}")
 async def get_full_article_by_title(title: str):
     """Get the full article by title."""
+    title = escape_sql_string(title)
     index = title_to_index.get(title)
     if index is not None:
         record = ds[index]
@@ -70,10 +81,11 @@ async def get_full_article_by_title(title: str):
 async def get_wiki_summary_by_prompt(
     prompt: str = Query(..., description="Search prompt"),
     percentile: float = Query(0.5, description="Percentile for search relevance"),
-    num_results: int = Query(1, description="Number of results to return")
+    num_results: int = Query(5, description="Number of results to return")
 ):
+    prompt = escape_sql_string(prompt)
     """Get wiki summaries by search prompt."""
-    search_query = f"SELECT id, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    search_query = f"SELECT id, title, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
     try:
         results = embeddings.search(search_query, num_results)
     except Exception as e:
@@ -95,12 +107,13 @@ async def get_wiki_summary_by_prompt(
     return summaries
 
 @app.get("/articles")
-async def get_full_wiki_article_by_prompt(
+async def get_full_wiki_articles_by_prompt(
     prompt: str = Query(..., description="Search prompt"),
     percentile: float = Query(0.5, description="Percentile for search relevance"),
-    num_results: int = Query(1, description="Number of results to return")
+    num_results: int = Query(5, description="Number of results to return")
 ):
     """Get full wiki articles by search prompt."""
+    prompt = escape_sql_string(prompt)
     search_query = f"SELECT id FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
     try:
         results = embeddings.search(search_query, num_results)
@@ -121,6 +134,84 @@ async def get_full_wiki_article_by_prompt(
             raise HTTPException(status_code=404, detail=f"No record found with title {title_id}")
 
     return articles
+
+@app.get("/top_article")
+async def get_top_full_article_by_prompt(
+    prompt: str = Query(..., description="Search prompt"),
+    percentile: float = Query(0.5, description="Percentile for search relevance"),
+    num_results: int = Query(5, description="Number of results to return")
+):
+    prompt = escape_sql_string(prompt)
+    """Get the top wiki article by search prompt."""
+    search_query = f"SELECT id, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    try:
+        results = embeddings.search(search_query, num_results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search error: {e}")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="No results found for prompt")
+
+    articles = []
+    for result in results:
+        index = title_to_index.get(result['id'])
+        if index is not None:
+            record = ds[index]
+            article_text = record["text"]
+            articles.append({"title": record["title"], "text": article_text})
+        else:
+            raise HTTPException(status_code=404, detail=f"No record found with title {result['id']}")
+
+    best_article = select_best_wikipedia_article(prompt, articles)
+    if best_article:
+        return best_article
+    else:
+        raise HTTPException(status_code=404, detail="No suitable article found")
+
+def select_best_wikipedia_article(prompt: str, articles: List[Dict[str, str]]) -> Dict[str, str]:
+    """
+    Select the best matching article based on the prompt, accounting for token frequencies.
+
+    Args:
+        prompt (str): The original prompt.
+        articles (list): List of dictionaries with 'title' and 'text'.
+
+    Returns:
+        dict: The article dictionary with the highest similarity score.
+    """
+
+    def tokenize(text):
+        return re.findall(r'\w+', text.lower())
+
+    prompt_tokens = tokenize(prompt)
+    prompt_counter = Counter(prompt_tokens)
+    best_score = -1
+    best_article = None
+
+    for article in articles:
+        title_tokens = tokenize(article.get('title', ''))
+        text_tokens = tokenize(article.get('text', ''))
+
+        title_counter = Counter(title_tokens)
+        text_counter = Counter(text_tokens)
+
+        title_overlap = sum((prompt_counter & title_counter).values())
+        text_overlap = sum((prompt_counter & text_counter).values())
+
+        # Assign weights (title matches are more significant)
+        score = title_overlap * 2 + text_overlap
+
+        if verbose:
+            print(f"Article Title: {article.get('title', '')}")
+            print(f"Title Overlap Count: {title_overlap}, Text Overlap Count: {text_overlap}, Score: {score}")
+
+        if score > best_score:
+            best_score = score
+            best_article = article
+
+    return best_article
+
+
 
 
 if __name__ == "__main__":

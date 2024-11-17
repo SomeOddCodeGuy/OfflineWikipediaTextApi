@@ -19,6 +19,13 @@ Welcome to the Offline Wikipedia Text API! This project provides a simple way to
 
 ## Important Notes
 
+There ARE scripts for Mac and Windows, but they are in the "Untested" folder because of two reasons:
+- A) On Mac, I ran into an issue with the XCode supplied git that it doesn't handle large files well. The result
+  is that I can't download the wikipedia datasets cleanly in that script. Once the sets are in their respective locations, the
+  script works great. You can find more in the "Untested" folder readme.
+- B) I don't have a Linux machine to test with. I've had a couple of people tell me it works fine, so I have
+  an expectation that it will.
+
 During first run, the app will first download about 60GB worth of datasets (see above), and then will take about 10-15
 minutes to do some indexing. This will only occur on first run; just let it do its thing. If, for any reason, you kill
 the process halfway through and need to redo it, you can simply delete the "title_to_index.json" file and it will be
@@ -69,16 +76,16 @@ and where.
    2) MacOS: `python3 -m pip install -r requirements.txt`
    3) Linux: `python -m pip install -r requirements.txt`
 6) Pull down the two needed datasets into the following folders within the project folder:
-   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20240101 
+   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20240901 
         You would need git-lfs installed to clone it
         Windows: https://git-lfs.com/
         Mac: https://git-lfs.com/ or `brew install git-lfs`
         Linux Ubuntu/Debian: `sudo apt install git-lfs`
         Then run:
         `git lfs install`
-        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20240101`
+        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20240901`
         The dataset requieres to be called `wiki-dataset` so rename it:
-        `mv wikipedia-20240101 wiki-dataset`      
+        `mv wikipedia-20240901 wiki-dataset`      
    2) `txtai-wikipedia` folder: https://huggingface.co/NeuML/txtai-wikipedia
         `git clone https://huggingface.co/NeuML/txtai-wikipedia`
    3) See project structure below to make sure you did it right
@@ -128,7 +135,20 @@ warning by default.
 
 ## Endpoints
 
-### 1. Get Full Article by Title
+### 1. Get Top Article by Prompt Query
+
+**Endpoint**: `/top_article`
+
+#### Example cURL Command
+```sh
+curl -G "http://localhost:5728/top_article" --data-urlencode "prompt=Quantum Physics" --data-urlencode "percentile=0.5" --data-urlencode "num_results=10"
+```
+
+`NOTE: The num_results for top_article is the number of results to compare to find the top article. This endpoint
+always returns a single result, but the higher your num_results the more articles it will compare in an attempt to
+find the top scoring`
+
+### 2. Get Full Article by Title
 
 **Endpoint**: `/articles/{title}`
 
@@ -137,7 +157,7 @@ warning by default.
 curl -X GET "http://localhost:5728/articles/Applications%20of%20quantum%20mechanics"
 ```
 
-### 2. Get Wiki Summaries by Prompt
+### 3. Get Wiki Summaries by Prompt Query
 
 **Endpoint**: `/summaries`
 
@@ -146,7 +166,7 @@ curl -X GET "http://localhost:5728/articles/Applications%20of%20quantum%20mechan
 curl -G "http://localhost:5728/summaries" --data-urlencode "prompt=Quantum Physics" --data-urlencode "percentile=0.5" --data-urlencode "num_results=1"
 ```
 
-### 3. Get Full Wiki Articles by Prompt
+### 4. Get Full Wiki Articles by Prompt Query
 
 **Endpoint**: `/articles`
 
