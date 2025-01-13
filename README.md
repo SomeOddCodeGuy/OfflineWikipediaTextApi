@@ -158,7 +158,7 @@ curl -G "http://localhost:5728/top_n_articles" --data-urlencode "prompt=quantum 
 ```
 
 `NOTE: The num_results for top_n_articles is the number of results to compare to find the top N articles, where num_top_articles is N.
-If percentile, num_results, and num_top_articles are not specified, then default values of 0.5, 20, and 80 will be used respectively.`
+If percentile, num_results, and num_top_articles are not specified, then default values of 0.5, 20, and 8 will be used respectively.`
 
 ### 3. Get Full Article by Title
 
