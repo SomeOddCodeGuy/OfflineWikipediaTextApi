@@ -168,6 +168,40 @@ async def get_top_full_article_by_prompt(
     else:
         raise HTTPException(status_code=404, detail="No suitable article found")
 
+@app.get("/top_n_articles")
+async def get_top_n_full_articles_by_prompt(
+    prompt: str = Query(..., description="Search prompt"),
+    percentile: float = Query(0.5, description="Percentile for search relevance"),
+    num_results: int = Query(20, description="Number of results to return"),
+    num_top_articles: int = Query(8, description="number of top articles to return")
+):
+    prompt = escape_sql_string(prompt)
+    """Get the top wiki article by search prompt."""
+    search_query = f"SELECT id, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    try:
+        results = embeddings.search(search_query, num_results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search error: {e}")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="No results found for prompt")
+
+    articles = []
+    for result in results:
+        index = title_to_index.get(result['id'])
+        if index is not None:
+            record = ds[index]
+            article_text = record["text"]
+            articles.append({"title": record["title"], "text": article_text})
+        else:
+            raise HTTPException(status_code=404, detail=f"No record found with title {result['id']}")
+
+    top_n_articles = select_top_n_wikipedia_articles(prompt, articles, num_top_articles)
+    if top_n_articles:
+        return top_n_articles
+    else:
+        raise HTTPException(status_code=404, detail="No suitable article found")
+
 def select_best_wikipedia_article(prompt: str, articles: List[Dict[str, str]]) -> Dict[str, str]:
     """
     Select the best matching article based on the prompt, accounting for token frequencies.
@@ -210,6 +244,55 @@ def select_best_wikipedia_article(prompt: str, articles: List[Dict[str, str]]) -
             best_article = article
 
     return best_article
+
+def select_top_n_wikipedia_articles(prompt: str, articles: List[Dict[str, str]], num_top_articles: int) -> List[Dict[str, str]]:
+    """
+    Select the top_n articles based on the prompt, accounting for token frequencies.
+
+    Args:
+        prompt (str): The original prompt.
+        articles (list): List of dictionaries with 'title' and 'text'.
+        num_top_articles (int): The number of top articles to return.
+
+    Returns:
+        List of dict: The articles dictionaries with the highest similarity score.
+    """
+
+    def tokenize(text):
+        return re.findall(r'\w+', text.lower())
+
+    prompt_tokens = tokenize(prompt)
+    prompt_counter = Counter(prompt_tokens)
+    best_score = -1
+    best_article = None
+
+    scored_articles = []
+
+    for article in articles:
+        title_tokens = tokenize(article.get('title', ''))
+        text_tokens = tokenize(article.get('text', ''))
+
+        title_counter = Counter(title_tokens)
+        text_counter = Counter(text_tokens)
+
+        title_overlap = sum((prompt_counter & title_counter).values())
+        text_overlap = sum((prompt_counter & text_counter).values())
+
+        # Assign weights (title matches are more significant)
+        score = title_overlap * 2 + text_overlap
+
+        if verbose:
+            print(f"Article Title: {article.get('title', '')}")
+            print(f"Title Overlap Count: {title_overlap}, Text Overlap Count: {text_overlap}, Score: {score}")
+
+        scored_articles.append((score, article))
+
+    # Sort articles by score in descending order and select the top_n articles
+    scored_articles.sort(reverse=True, key=lambda x: x[0])
+    top_n_articles = [article for score, article in scored_articles[:num_top_articles]]
+
+    return top_n_articles
+
 
 
 
