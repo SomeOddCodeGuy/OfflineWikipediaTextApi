@@ -176,7 +176,7 @@ async def get_top_n_full_articles_by_prompt(
     num_top_articles: int = Query(8, description="number of top articles to return")
 ):
     prompt = escape_sql_string(prompt)
-    """Get the top wiki article by search prompt."""
+    """Get the top N wiki articles by search prompt."""
     search_query = f"SELECT id, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
     try:
         results = embeddings.search(search_query, num_results)
