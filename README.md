@@ -148,7 +148,19 @@ curl -G "http://localhost:5728/top_article" --data-urlencode "prompt=Quantum Phy
 always returns a single result, but the higher your num_results the more articles it will compare in an attempt to
 find the top scoring`
 
-### 2. Get Full Article by Title
+### 2. Get Top N Articles by Prompt Query
+
+**Endpoint**: `/top_n_articles`
+
+#### Example cURL Command
+```sh
+curl -G "http://localhost:5728/top_n_articles" --data-urlencode "prompt=quantum physics and gravity" --data-urlencode "percentile=0.4" --data-urlencode "num_results=80" --data-urlencode "num_top_articles=6"
+```
+
+`NOTE: The num_results for top_n_articles is the number of results to compare to find the top N articles, where num_top_articles is N.
+If percentile, num_results, and num_top_articles are not specified, then default values of 0.5, 20, and 8 will be used respectively.`
+
+### 3. Get Full Article by Title
 
 **Endpoint**: `/articles/{title}`
 
@@ -157,7 +169,7 @@ find the top scoring`
 curl -X GET "http://localhost:5728/articles/Applications%20of%20quantum%20mechanics"
 ```
 
-### 3. Get Wiki Summaries by Prompt Query
+### 4. Get Wiki Summaries by Prompt Query
 
 **Endpoint**: `/summaries`
 
@@ -166,7 +178,7 @@ curl -X GET "http://localhost:5728/articles/Applications%20of%20quantum%20mechan
 curl -G "http://localhost:5728/summaries" --data-urlencode "prompt=Quantum Physics" --data-urlencode "percentile=0.5" --data-urlencode "num_results=1"
 ```
 
-### 4. Get Full Wiki Articles by Prompt Query
+### 5. Get Full Wiki Articles by Prompt Query
 
 **Endpoint**: `/articles`
 
