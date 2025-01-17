@@ -7,12 +7,6 @@ run them.
 
 Current Contents:
 ------------------------
-**run_linux.sh** - This is an AI translated linux version of the run_windows.bat file. 
-I do not have a linux system to test with, so I can't be sure it'll work. If you
-have a linux system and want to give it a try, please let me know how it goes. I
-do urge you, however, to take caution and look over the file first to ensure that
-it doesn't do anything that you aren't comfortable with it doing on your system.
-
 **run_macos.sh** This I have run on my own Mac Studio and it worked EXCEPT for the
 git clone call. I need to find a workaround for that. More information in the "KNOWN ISSUE"
 section below.

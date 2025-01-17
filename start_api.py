@@ -1,3 +1,4 @@
+import argparse
 import os
 import json
 from typing import List, Dict
@@ -15,8 +16,18 @@ import re
 # Correcting an issue in Windows
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-WIKI_DATASET_DIR = os.path.join("wiki-dataset", "train")
-TXT_AI_DIR = "txtai-wikipedia"
+parser = argparse.ArgumentParser(description="Offline Wikipedia Text API")
+parser.add_argument(
+    "-d",
+    "--database_dir",
+    default=".",
+    help="Base directory containing the wiki-dataset and txtai-wikipedia folders."
+)
+args = parser.parse_args()
+
+DATABASE_DIR = args.database_dir
+WIKI_DATASET_DIR = os.path.join(DATABASE_DIR, "wiki-dataset", "train")
+TXT_AI_DIR = os.path.join(DATABASE_DIR, "txtai-wikipedia")
 DICTIONARY_FILE = "title_to_index.json"
 CONFIG_FILE = "config.json"
 

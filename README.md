@@ -54,6 +54,14 @@ and where.
         ```
     
     - For Linux or MacOS:
+        ```sh
+        ./run_linux.sh
+        ```
+        Or with custom directory for the wiki data (parent of wiki-dataset and txtai-wikipedia):
+        ```sh
+        ./run_linux.sh --database_dir path/to/datadirs
+        ```
+      - The script was tested on Linux and it might work on MacOS.
       - There are currently scripts within "Untested", though there is a known issue for MacOS related to git. A workaround 
         is presented in the README for that folder.
 
@@ -131,7 +139,7 @@ The API configuration is managed through the `config.json` file:
 ```
 
 The "verbose" is for changing whether the API library uvicorn outputs all logs vs just warning logs. Set to 
-warning by default. 
+warning by default.
 
 ## Endpoints
 
