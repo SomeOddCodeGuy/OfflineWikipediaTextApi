@@ -158,7 +158,10 @@ curl -G "http://localhost:5728/top_n_articles" --data-urlencode "prompt=quantum 
 ```
 
 `NOTE: The num_results for top_n_articles is the number of results to compare to find the top N articles, where num_top_articles is N.
-If percentile, num_results, and num_top_articles are not specified, then default values of 0.5, 20, and 8 will be used respectively.`
+The output articles are given in order of score, where largest scored article is first by default (descending).
+If percentile, num_results, and num_top_articles are not specified, then default values of 0.5, 20, and 8 will be used respectively.
+num_top_articles can also be negative, where a negative number will give the results as ascending score rather then descending - this is useful
+when context is truncated by LLM.`
 
 ### 3. Get Full Article by Title
 
