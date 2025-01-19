@@ -287,9 +287,17 @@ def select_top_n_wikipedia_articles(prompt: str, articles: List[Dict[str, str]],
 
         scored_articles.append((score, article))
 
-    # Sort articles by score in descending order and select the top_n articles
-    scored_articles.sort(reverse=True, key=lambda x: x[0])
-    top_n_articles = [article for score, article in scored_articles[:num_top_articles]]
+    #positive will be decending top articles, negative ascending
+    if num_top_articles >= 0:
+        # Sort articles by score in descending order and select the top_n articles
+        scored_articles.sort(reverse=True, key=lambda x: x[0])
+        top_n_articles = [article for score, article in scored_articles[:num_top_articles]]
+    else:
+        # Sort articles by score in ascending order and select the top_n articles
+        #useful to have top article last as LLM chat context length truncated from top
+        scored_articles.sort(reverse=False, key=lambda x: x[0])
+        #since num_top_articles is already negative, this takes last n articles
+        top_n_articles = [article for score, article in scored_articles[num_top_articles:]]
 
     return top_n_articles
 
