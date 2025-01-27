@@ -47,17 +47,25 @@ and where.
     ```
 ### Installation via Scripts
 
-2. **Run the API**
-    - For Windows:
-        ```sh
+2. **Run the API** 
+    - **For Windows**:
+    
+        *To run with the default configuration (current directory as the base for datasets):*
+        ```cmd
         run_windows.bat
         ```
+        *To run with a custom directory for the wiki data (parent of `wiki-dataset` and `txtai-wikipedia`):*
+        ```cmd
+        run_windows.bat --database_dir path\to\datadirs
+        ```
     
-    - For Linux or MacOS:
+    - **For Linux or MacOS**:
+        
+        *To run with the default configuration (current directory as the base for datasets):*
         ```sh
         ./run_linux.sh
         ```
-        Or with custom directory for the wiki data (parent of wiki-dataset and txtai-wikipedia):
+        *Or with custom directory for the wiki data (parent of wiki-dataset and txtai-wikipedia):*
         ```sh
         ./run_linux.sh --database_dir path/to/datadirs
         ```
