@@ -6,8 +6,8 @@ trap 'echo >&2 "Error - exited with status $? at line $LINENO"' ERR
 
 # Step 0: Parse any arguments we care about
 DATABASE_DIR="."
-WIKI_DATA_SET_DIR="$DATA_DIR/wiki-dataset"
-TXTAI_WIKIPEDIA_DIR="$DATA_DIR/txtai-wikipedia"
+WIKI_DATA_SET_DIR="$DATABASE_DIR/wiki-dataset"
+TXTAI_WIKIPEDIA_DIR="$DATABASE_DIR/txtai-wikipedia"
 OTHER_ARGS=()
 
 function help() {
@@ -26,6 +26,8 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --database_dir|-d)
       DATABASE_DIR="$2"
+      WIKI_DATA_SET_DIR="$DATABASE_DIR/wiki-dataset"
+      TXTAI_WIKIPEDIA_DIR="$DATABASE_DIR/txtai-wikipedia"
       shift 2
       ;;
     --help|-h)
@@ -43,7 +45,7 @@ done
 
 # Step A: Create and activate a Python virtual environment
 echo Creating virtual environment
-if [ ! -f "venv" ]; then
+if [ ! -d "venv" ]; then
     python -m venv venv
 else
     echo Existing venv detected. Activating.
@@ -55,24 +57,35 @@ source venv/bin/activate
 # Step B: Install requirements from requirements.txt
 echo ---------------------------------------------------------------
 echo Installing python requirements from requirements.txt
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # Step C: Clone the git repository for full wiki articles into a directory called "wiki-dataset"
 echo ---------------------------------------------------------------
 echo Downloading Wikipedia dataset. As of 2024-11-14, this is about 44GB
 if [ ! -d "$WIKI_DATA_SET_DIR" ]; then
-    git clone https://huggingface.co/datasets/NeuML/wikipedia-20240901 "$WIKI_DATA_SET_DIR"
+    # Clone with Git LFS support
+    GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/NeuML/wikipedia-20240901 "$WIKI_DATA_SET_DIR"
+    echo "Pulling LFS files for wiki dataset (this may take a while)..."
+    cd "$WIKI_DATA_SET_DIR" && git lfs pull && cd - || echo "LFS pull failed for wiki dataset"
 else
     echo Existing wiki-dataset directory detected.
+    echo "Checking for LFS files in wiki dataset..."
+    cd "$WIKI_DATA_SET_DIR" && git lfs pull && cd - || echo "LFS pull failed for wiki dataset"
 fi
 
 # Step D: Clone the git repository for txtai wiki summaries into a directory called txtai-wikipedia
 echo ---------------------------------------------------------------
 echo Downloading txtai-wikipedia dataset. As of 2024-11-14, this is about 15GB.
 if [ ! -d "$TXTAI_WIKIPEDIA_DIR" ]; then
-    git clone https://huggingface.co/NeuML/txtai-wikipedia "$TXTAI_WIKIPEDIA_DIR"
+    # Clone with Git LFS support
+    GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/NeuML/txtai-wikipedia "$TXTAI_WIKIPEDIA_DIR"
+    echo "Pulling LFS files for txtai dataset (this may take a while)..."
+    cd "$TXTAI_WIKIPEDIA_DIR" && git lfs pull && cd - || echo "LFS pull failed for txtai dataset"
 else
     echo Existing txtai-wikipedia directory detected.
+    echo "Checking for LFS files in txtai dataset..."
+    cd "$TXTAI_WIKIPEDIA_DIR" && git lfs pull && cd - || echo "LFS pull failed for txtai dataset" 
 fi
 
 # Finally: Start the API
