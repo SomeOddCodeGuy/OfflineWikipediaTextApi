@@ -37,6 +37,7 @@ source venv/bin/activate
 echo "---------------------------------------------------------------"
 echo "Installing python requirements from requirements.txt"
 pip install -r requirements.txt
+pip install accelerate
 
 # Step C: Clone the git repository for full wiki articles
 echo "---------------------------------------------------------------"
