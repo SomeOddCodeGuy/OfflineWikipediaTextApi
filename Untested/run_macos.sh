@@ -31,7 +31,6 @@ else
 fi
 
 echo "Activating virtual environment"
-source venv/bin/activate
 
 # Step B: Install requirements from requirements.txt
 echo "---------------------------------------------------------------"
