@@ -4,3 +4,4 @@ datasets~=3.5.0
 txtai~=8.4.0
 colorama~=0.4.6
 numpy<2.0.0
+accelerate~=1.6.0
