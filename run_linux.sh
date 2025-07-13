@@ -62,10 +62,10 @@ pip install -r requirements.txt
 
 # Step C: Clone the git repository for full wiki articles into a directory called "wiki-dataset"
 echo ---------------------------------------------------------------
-echo Downloading Wikipedia dataset. As of 2024-11-14, this is about 44GB
+echo Downloading Wikipedia dataset. As of 2025-07-13, this is about 46GB
 if [ ! -d "$WIKI_DATA_SET_DIR" ]; then
     # Clone with Git LFS support
-    GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/NeuML/wikipedia-20240901 "$WIKI_DATA_SET_DIR"
+    GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/NeuML/wikipedia-20250620 "$WIKI_DATA_SET_DIR"
     echo "Pulling LFS files for wiki dataset (this may take a while)..."
     cd "$WIKI_DATA_SET_DIR" && git lfs pull && cd - || echo "LFS pull failed for wiki dataset"
 else
@@ -76,7 +76,7 @@ fi
 
 # Step D: Clone the git repository for txtai wiki summaries into a directory called txtai-wikipedia
 echo ---------------------------------------------------------------
-echo Downloading txtai-wikipedia dataset. As of 2024-11-14, this is about 15GB.
+echo Downloading txtai-wikipedia dataset. As of 2025-07-13, this is about 15GB.
 if [ ! -d "$TXTAI_WIKIPEDIA_DIR" ]; then
     # Clone with Git LFS support
     GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/NeuML/txtai-wikipedia "$TXTAI_WIKIPEDIA_DIR"

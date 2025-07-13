@@ -38,16 +38,16 @@ pip install -r requirements.txt
 
 :: Step C: Clone the git repository for full wiki articles into the specified directory
 echo ---------------------------------------------------------------
-echo Downloading Wikipedia dataset. As of 2024-11-14, this is about 44GB
+echo Downloading Wikipedia dataset. As of 2025-07-13, this is about 46GB
 if not exist "%WIKI_DATASET_DIR%" (
-    git clone https://huggingface.co/datasets/NeuML/wikipedia-20240901 "%WIKI_DATASET_DIR%"
+    git clone https://huggingface.co/datasets/NeuML/wikipedia-20250620 "%WIKI_DATASET_DIR%"
 ) else (
     echo Existing wiki-dataset directory detected.
 )
 
 :: Step D: Clone the git repository for txtai wiki summaries into the specified directory
 echo ---------------------------------------------------------------
-echo Downloading txtai-wikipedia dataset. As of 2024-11-14, this is about 15GB.
+echo Downloading txtai-wikipedia dataset. As of 2025-07-13, this is about 15GB.
 if not exist "%TXT_AI_DIR%" (
     git clone https://huggingface.co/NeuML/txtai-wikipedia "%TXT_AI_DIR%"
 ) else (
