@@ -12,7 +12,7 @@ Welcome to the Offline Wikipedia Text API! This project provides a simple way to
 * This project requires a minimum of 60GB of hard disk space to store the related datasets
 * This project utilizes Git to pull down the needed datasets (https://git-scm.com/downloads)
   * This can be skipped by downloading the datasets into their respective folders in the project directory.
-    * "wiki-dataset" folder: https://huggingface.co/datasets/NeuML/wikipedia-20240101
+    * "wiki-dataset" folder: https://huggingface.co/datasets/NeuML/wikipedia-20250620
     * "txtai-wikipedia" folder: https://huggingface.co/NeuML/txtai-wikipedia
   * The existence of the two dataset folders should skip the git calls, bypassing their need.
 * This project is a Python project, and requires Python to run.
@@ -92,16 +92,16 @@ and where.
    2) MacOS: `python3 -m pip install -r requirements.txt`
    3) Linux: `python -m pip install -r requirements.txt`
 6) Pull down the two needed datasets into the following folders within the project folder:
-   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20240901 
+   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20250620 
         You would need git-lfs installed to clone it
         Windows: https://git-lfs.com/
         Mac: https://git-lfs.com/ or `brew install git-lfs`
         Linux Ubuntu/Debian: `sudo apt install git-lfs`
         Then run:
         `git lfs install`
-        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20240901`
+        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20250620`
         The dataset requieres to be called `wiki-dataset` so rename it:
-        `mv wikipedia-20240901 wiki-dataset`      
+        `mv wikipedia-20250620 wiki-dataset`      
    2) `txtai-wikipedia` folder: https://huggingface.co/NeuML/txtai-wikipedia
         `git clone https://huggingface.co/NeuML/txtai-wikipedia`
    3) See project structure below to make sure you did it right
