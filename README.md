@@ -38,6 +38,18 @@ This project relies heavily on [txtai](https://github.com/neuml/txtai/), which u
 and utilize small models itself for searching. Please see that project for an understanding of what gets downloaded
 and where.
 
+> NOTE: There is a known issue within txtai on Windows 11 and MacOS with the following
+> error: `Error #15: Initializing libomp.dylib, but found libomp.dylib already initialized.` You can see the issues and
+> the various workarounds here: [txt issues](https://github.com/neuml/txtai/issues?q=is%3Aissue%20state%3Aclosed%20KMP_DUPLICATE_LIB_OK)
+>
+> On Mac, I personally use `KMP_DUPLICATE_LIB_OK=TRUE bash run_macos.sh`, setting the environment variable suggested in the
+> error, and it seems to work alright.
+>
+> For a little while I had this set in the .py file, but given the warning that it could result in
+> unexpected behavior within the app, I thought it better to let the users decide for themselves rather than having it where they can't see it.
+> If you run into this issue, you should look over the issues link above for workarounds suggested there.
+>
+> -Socg
 
 
 1. **Clone the Repository**
