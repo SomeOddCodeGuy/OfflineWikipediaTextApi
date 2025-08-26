@@ -13,9 +13,6 @@ from txtai.embeddings import Embeddings
 from collections import Counter
 import re
 
-# Correcting an issue in Windows
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 parser = argparse.ArgumentParser(description="Offline Wikipedia Text API")
 parser.add_argument(
     "-d",
