@@ -1,8 +1,8 @@
-uvicorn~=0.35.0
-fastapi~=0.116.1
-datasets~=4.0.0
-txtai~=8.6.0
+uvicorn~=0.48.0
+fastapi~=0.136.3
+datasets~=4.8.5
+txtai~=9.9.0
 colorama~=0.4.6
-numpy~=2.3.1
-accelerate~=1.8.1
-torch~=2.7.0
+numpy~=2.4.6
+accelerate~=1.13.0
+torch~=2.12.0

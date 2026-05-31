@@ -52,10 +52,16 @@ def load_title_to_index(ds):
 
 # Load configuration
 config = load_config()
-host = config.get("host", "0.0.0.0")
+host = config.get("host", "127.0.0.1")
 port = config.get("port", 5728)
 verbose = config.get("verbose", False)
 log_level = "info" if verbose else "warning"
+
+# Optional sanity caps (None = unlimited, preserving the original behavior).
+# Set these in config.json if you want defense-in-depth limits.
+MAX_PROMPT_LEN = config.get("max_prompt_length")
+MAX_TITLE_LEN = config.get("max_title_length")
+MAX_NUM_RESULTS = config.get("max_num_results")
 
 # Load datasets and mappings
 ds = load_wiki_dataset()
@@ -68,22 +74,34 @@ app = FastAPI()
 embeddings = Embeddings()
 embeddings.load(path=TXT_AI_DIR)
 
-def escape_sql_string(s) -> str:
-    s = s.replace("'", "")
-    s = s.replace("\"", "")
-    s = s.replace(";", "")
+def validate_prompt(s: str) -> str:
+    # Null bytes are not legal in URLs and most clients can't send them at all,
+    # but reject explicitly as defense-in-depth. Length is only checked when the
+    # operator opted in via config.json.
+    if "\x00" in s:
+        raise HTTPException(status_code=400, detail="Invalid characters in prompt")
+    if MAX_PROMPT_LEN is not None and len(s) > MAX_PROMPT_LEN:
+        raise HTTPException(status_code=400, detail="Prompt too long")
     return s
+
+
+def validate_num_results(n: int) -> int:
+    if MAX_NUM_RESULTS is not None and n > MAX_NUM_RESULTS:
+        raise HTTPException(status_code=400, detail="num_results too large")
+    return n
+
 
 @app.get("/articles/{title}")
 async def get_full_article_by_title(title: str):
     """Get the full article by title."""
-    title = escape_sql_string(title)
+    if MAX_TITLE_LEN is not None and len(title) > MAX_TITLE_LEN:
+        raise HTTPException(status_code=400, detail="Title too long")
     index = title_to_index.get(title)
     if index is not None:
         record = ds[index]
         return {"title": record["title"], "text": record["text"]}
     else:
-        raise HTTPException(status_code=404, detail=f"No record found with title {title}")
+        raise HTTPException(status_code=404, detail="No record found with the given title")
 
 @app.get("/summaries")
 async def get_wiki_summary_by_prompt(
@@ -91,13 +109,14 @@ async def get_wiki_summary_by_prompt(
     percentile: float = Query(0.5, description="Percentile for search relevance"),
     num_results: int = Query(5, description="Number of results to return")
 ):
-    prompt = escape_sql_string(prompt)
     """Get wiki summaries by search prompt."""
-    search_query = f"SELECT id, title, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    prompt = validate_prompt(prompt)
+    validate_num_results(num_results)
+    search_query = "SELECT id, title, text FROM txtai WHERE similar(:prompt) and percentile >= :pct"
     try:
-        results = embeddings.search(search_query, num_results)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {e}")
+        results = embeddings.search(search_query, num_results, parameters={"prompt": prompt, "pct": percentile})
+    except Exception:
+        raise HTTPException(status_code=500, detail="Search error")
 
     if not results:
         raise HTTPException(status_code=404, detail="No results found for prompt")
@@ -109,8 +128,9 @@ async def get_wiki_summary_by_prompt(
             record = ds[index]
             summary_text = record["text"][:500]  # Return a summary snippet of the first 500 characters
             summaries.append({"title": record["title"], "text": summary_text})
-        else:
-            raise HTTPException(status_code=404, detail=f"No record found with title {result['id']}")
+
+    if not summaries:
+        raise HTTPException(status_code=404, detail="No matching records found")
 
     return summaries
 
@@ -121,25 +141,26 @@ async def get_full_wiki_articles_by_prompt(
     num_results: int = Query(5, description="Number of results to return")
 ):
     """Get full wiki articles by search prompt."""
-    prompt = escape_sql_string(prompt)
-    search_query = f"SELECT id FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    prompt = validate_prompt(prompt)
+    validate_num_results(num_results)
+    search_query = "SELECT id FROM txtai WHERE similar(:prompt) and percentile >= :pct"
     try:
-        results = embeddings.search(search_query, num_results)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {e}")
+        results = embeddings.search(search_query, num_results, parameters={"prompt": prompt, "pct": percentile})
+    except Exception:
+        raise HTTPException(status_code=500, detail="Search error")
 
     if not results:
         raise HTTPException(status_code=404, detail="No results found for prompt")
 
     articles = []
     for result in results:
-        title_id = result['id']
-        index = title_to_index.get(title_id)
+        index = title_to_index.get(result['id'])
         if index is not None:
             record = ds[index]
             articles.append({"title": record["title"], "text": record["text"]})
-        else:
-            raise HTTPException(status_code=404, detail=f"No record found with title {title_id}")
+
+    if not articles:
+        raise HTTPException(status_code=404, detail="No matching records found")
 
     return articles
 
@@ -149,13 +170,14 @@ async def get_top_full_article_by_prompt(
     percentile: float = Query(0.5, description="Percentile for search relevance"),
     num_results: int = Query(5, description="Number of results to return")
 ):
-    prompt = escape_sql_string(prompt)
     """Get the top wiki article by search prompt."""
-    search_query = f"SELECT id, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    prompt = validate_prompt(prompt)
+    validate_num_results(num_results)
+    search_query = "SELECT id, text FROM txtai WHERE similar(:prompt) and percentile >= :pct"
     try:
-        results = embeddings.search(search_query, num_results)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {e}")
+        results = embeddings.search(search_query, num_results, parameters={"prompt": prompt, "pct": percentile})
+    except Exception:
+        raise HTTPException(status_code=500, detail="Search error")
 
     if not results:
         raise HTTPException(status_code=404, detail="No results found for prompt")
@@ -167,8 +189,6 @@ async def get_top_full_article_by_prompt(
             record = ds[index]
             article_text = record["text"]
             articles.append({"title": record["title"], "text": article_text})
-        else:
-            raise HTTPException(status_code=404, detail=f"No record found with title {result['id']}")
 
     best_article = select_best_wikipedia_article(prompt, articles)
     if best_article:
@@ -183,13 +203,14 @@ async def get_top_n_full_articles_by_prompt(
     num_results: int = Query(20, description="Number of results to return"),
     num_top_articles: int = Query(8, description="number of top articles to return")
 ):
-    prompt = escape_sql_string(prompt)
     """Get the top N wiki articles by search prompt."""
-    search_query = f"SELECT id, text FROM txtai WHERE similar('{prompt}') and percentile >= {percentile}"
+    prompt = validate_prompt(prompt)
+    validate_num_results(num_results)
+    search_query = "SELECT id, text FROM txtai WHERE similar(:prompt) and percentile >= :pct"
     try:
-        results = embeddings.search(search_query, num_results)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {e}")
+        results = embeddings.search(search_query, num_results, parameters={"prompt": prompt, "pct": percentile})
+    except Exception:
+        raise HTTPException(status_code=500, detail="Search error")
 
     if not results:
         raise HTTPException(status_code=404, detail="No results found for prompt")
@@ -201,8 +222,6 @@ async def get_top_n_full_articles_by_prompt(
             record = ds[index]
             article_text = record["text"]
             articles.append({"title": record["title"], "text": article_text})
-        else:
-            raise HTTPException(status_code=404, detail=f"No record found with title {result['id']}")
 
     top_n_articles = select_top_n_wikipedia_articles(prompt, articles, num_top_articles)
     if top_n_articles:
