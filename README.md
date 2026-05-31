@@ -9,24 +9,22 @@ Welcome to the Offline Wikipedia Text API! This project provides a simple way to
 
 ## Requirements
 
-* This project requires a minimum of 60GB of hard disk space to store the related datasets
+* This project requires a minimum of ~70GB of free disk space during installation (the two datasets together are ~67GB after download). After the install completes you can optionally delete the `.git` folders inside each dataset directory to reclaim roughly half of that space.
 * This project utilizes Git to pull down the needed datasets (https://git-scm.com/downloads)
   * This can be skipped by downloading the datasets into their respective folders in the project directory.
-    * "wiki-dataset" folder: https://huggingface.co/datasets/NeuML/wikipedia-20250620
+    * "wiki-dataset" folder: https://huggingface.co/datasets/NeuML/wikipedia-20260401
     * "txtai-wikipedia" folder: https://huggingface.co/NeuML/txtai-wikipedia
   * The existence of the two dataset folders should skip the git calls, bypassing their need.
 * This project is a Python project, and requires Python to run.
 
 ## Important Notes
 
-There ARE scripts for Mac and Windows, but they are in the "Untested" folder because of two reasons:
-- A) On Mac, I ran into an issue with the XCode supplied git that it doesn't handle large files well. The result
-  is that I can't download the wikipedia datasets cleanly in that script. Once the sets are in their respective locations, the
-  script works great. You can find more in the "Untested" folder readme.
-- B) I don't have a Linux machine to test with. I've had a couple of people tell me it works fine, so I have
-  an expectation that it will.
+Scripts are provided for Linux (`run_linux.sh`), MacOS (`run_macos.sh`), and Windows (`run_windows.bat`). Each one runs a
+pre-flight check for `git`, `git-lfs`, and `python` and will stop with an instructional error if any are missing, so a
+missing Git LFS install (a common issue on macOS, where the Xcode-supplied git does not include git-lfs) is caught up
+front instead of silently producing broken pointer files.
 
-During first run, the app will first download about 60GB worth of datasets (see above), and then will take about 10-15
+During first run, the app will first download about 67GB worth of datasets (see above), and then will take about 10-15
 minutes to do some indexing. This will only occur on first run; just let it do its thing. If, for any reason, you kill
 the process halfway through and need to redo it, you can simply delete the "title_to_index.json" file and it will be
 recreated. You can also delete the "wiki-dataset" and "txtai-wikipedia" folders to redownload.
@@ -71,7 +69,7 @@ and where.
         run_windows.bat --database_dir path\to\datadirs
         ```
     
-    - **For Linux or MacOS**:
+    - **For Linux**:
         
         *To run with the default configuration (current directory as the base for datasets):*
         ```sh
@@ -81,9 +79,18 @@ and where.
         ```sh
         ./run_linux.sh --database_dir path/to/datadirs
         ```
-      - The script was tested on Linux and it might work on MacOS.
-      - There are currently scripts within "Untested", though there is a known issue for MacOS related to git. A workaround 
-        is presented in the README for that folder.
+
+    - **For MacOS**:
+
+        ```sh
+        ./run_macos.sh
+        ```
+        *Or with a custom data directory:*
+        ```sh
+        ./run_macos.sh --database_dir path/to/datadirs
+        ```
+        On MacOS, if you hit the `libomp.dylib already initialized` error noted above, prefix the command with the
+        workaround env var: `KMP_DUPLICATE_LIB_OK=TRUE ./run_macos.sh`.
 
 ### Manual Installation
 
@@ -104,16 +111,16 @@ and where.
    2) MacOS: `python3 -m pip install -r requirements.txt`
    3) Linux: `python -m pip install -r requirements.txt`
 6) Pull down the two needed datasets into the following folders within the project folder:
-   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20250620 
+   1) `wiki-dataset` folder: https://huggingface.co/datasets/NeuML/wikipedia-20260401 
         You would need git-lfs installed to clone it
         Windows: https://git-lfs.com/
         Mac: https://git-lfs.com/ or `brew install git-lfs`
         Linux Ubuntu/Debian: `sudo apt install git-lfs`
         Then run:
         `git lfs install`
-        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20250620`
+        `git clone https://huggingface.co/datasets/NeuML/wikipedia-20260401`
         The dataset requieres to be called `wiki-dataset` so rename it:
-        `mv wikipedia-20250620 wiki-dataset`      
+        `mv wikipedia-20260401 wiki-dataset`      
    2) `txtai-wikipedia` folder: https://huggingface.co/NeuML/txtai-wikipedia
         `git clone https://huggingface.co/NeuML/txtai-wikipedia`
    3) See project structure below to make sure you did it right
@@ -152,7 +159,7 @@ The API configuration is managed through the `config.json` file:
 
 ```json
 {
-    "host": "0.0.0.0",
+    "host": "127.0.0.1",
     "port": 5728,
     "verbose": false
 }
@@ -160,6 +167,24 @@ The API configuration is managed through the `config.json` file:
 
 The "verbose" is for changing whether the API library uvicorn outputs all logs vs just warning logs. Set to 
 warning by default.
+
+The "host" defaults to `127.0.0.1` so the API is only reachable from the same machine. If you need to access it
+from other devices on your LAN, change this to `0.0.0.0`. Only do that on a trusted network — this API has no
+authentication and exposing it on a public network would let anyone query your dataset.
+
+There are also three OPTIONAL caps you can set in `config.json` if you want defense-in-depth limits on incoming
+requests. None of them are enforced unless you add them, so the default behavior is unchanged:
+
+```json
+{
+    "max_prompt_length": 500,
+    "max_title_length": 500,
+    "max_num_results": 200
+}
+```
+
+If a request exceeds a configured cap, the API returns HTTP 400. Leave any key out (or do not add this section at
+all) to disable that cap entirely.
 
 ## Endpoints
 
@@ -233,6 +258,8 @@ This project imports dependencies in the requirements.txt:
 - [Faiss-cpu](https://github.com/facebookresearch/faiss/)
 - [Colorama](https://github.com/tartley/colorama/)
 - [NumPy](https://github.com/numpy/numpy/)
+- [PyTorch](https://github.com/pytorch/pytorch/)
+- [Accelerate](https://github.com/huggingface/accelerate/)
 
 Please see ThirdParty-Licenses directory for details on their licenses.
 
